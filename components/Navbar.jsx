@@ -1,7 +1,7 @@
 "use client";
 import { FaGoogle } from "react-icons/fa";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "@/assets/images/logo-white.png";
 import profileDefault from "@/assets/images/profile.png";
 import { MdViewSidebar } from "react-icons/md";
@@ -14,9 +14,20 @@ const Navbar = () => {
   const [menuBar, setMenuBar] = useState(false);
   const [Profile, setProfile] = useState(false);
 
-  const [isLoggedin, setisLoggedIn] = useState(false);
+  const [providers, setProvider] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const setAuthProviders = async () => {
+      const res = await getProviders();
+
+      setProvider(res);
+    };
+
+    setAuthProviders();
+  }, []);
+
+  console.log(providers);
   return (
     <>
       <nav>
@@ -95,20 +106,29 @@ const Navbar = () => {
             >
               <Link href="/properties">properties</Link>
             </button>
-            {session && (
-              <button
-                className="
+
+            <button
+              className="
             hover:bg-black transition-all duration-500 text-white rounded-xl px-2"
-              >
-                <Link href="/properties/add">properties Add</Link>
-              </button>
-            )}
-          </div>
-          <div className="flex justify-around  md:justify-start   md:flex-row space-y-5 mt-5 md:space-y-0 md:mt-0 w-full   gap-2 items-center">
-            <button className="bg-black flex items-center gap-2 text-white px-2 py-2 rounded-xl transition-all duration-500 hover:bg-slate-600">
-              <FaGoogle />
-              Login on Register
+            >
+              <Link href="/properties/add">properties Add</Link>
             </button>
+          </div>
+
+          {/* Right Side Menu (logged In) */}
+
+          <div className="flex justify-around  md:justify-start   md:flex-row space-y-5 mt-5 md:space-y-0 md:mt-0 w-full   gap-2 items-center">
+            {!session &&
+              Object.values(providers).map((item, idx) => (
+                <button
+                  onClick={() => signIn(item.id)}
+                  key={idx}
+                  className="bg-black mt-3 md:mt-0  flex items-center gap-2 text-white px-2 py-2 rounded-xl transition-all duration-500 hover:bg-slate-600"
+                >
+                  <FaGoogle />
+                  Login on Register
+                </button>
+              ))}
             <div className="relative">
               <Image
                 src={logo}
@@ -116,10 +136,12 @@ const Navbar = () => {
                 className="h-[30px] object-contain"
                 width={50}
               />
+
               <span className="absolute -top-3 bg-red-500 text-white px-2 rounded-xl right-0">
                 1
               </span>
             </div>
+
             <div onClick={() => setProfile(prev => !prev)} className="relative">
               <Image
                 src={profileDefault}
